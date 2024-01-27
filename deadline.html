@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Date Range Divider</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 20px;
+      }
+      #result {
+        margin-top: 20px;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>데드라인 계산기</h1>
+    <form id="dateForm">
+      <label for="startDate">시작일:</label>
+      <input type="datetime-local" id="startDate" required />
+      <label for="endDate">종료일:</label>
+      <input type="datetime-local" id="endDate" required />
+      <button type="submit">데드라인 계산하기</button>
+    </form>
+    <div id="result"></div>
+    <div id="error" class="error"></div>
+
+    <script>
+      function divideDateRange(startDate, endDate) {
+        // 입력된 시작일과 종료일을 Date 객체로 변환합니다.
+        startDate = new Date(startDate);
+        endDate = new Date(endDate);
+
+        // 시작일이 종료일보다 빠른지 확인합니다.
+        if (startDate >= endDate) {
+          showError("시작일은 종료일보다 빠를 수 없습니다.");
+          return null;
+        }
+
+        // 두 날짜 간의 총 기간을 계산합니다.
+        const totalDuration = endDate - startDate;
+
+        // 비율을 계산합니다. 3:3:2 비율로 나누기 위한 비율입니다.
+        const ratio = [3, 3, 2];
+
+        // 비율을 합산합니다.
+        const ratioSum = ratio.reduce((acc, val) => acc + val, 0);
+
+        // 비율에 따라 각각의 구간을 계산합니다.
+        const ranges = ratio.map((val) => (totalDuration * val) / ratioSum);
+
+        // 결과를 반환합니다.
+        const dividedRanges = {
+          firstRange: new Date(startDate.getTime() + ranges[0]),
+          secondRange: new Date(startDate.getTime() + ranges[0] + ranges[1]),
+          thirdRange: new Date(
+            startDate.getTime() + ranges[0] + ranges[1] + ranges[2]
+          ),
+        };
+
+        return dividedRanges;
+      }
+
+      function showError(message) {
+        const errorDiv = document.getElementById("error");
+        errorDiv.textContent = message;
+      }
+
+      const dateForm = document.getElementById("dateForm");
+      const resultDiv = document.getElementById("result");
+
+      dateForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        // 오류 메시지 초기화
+        showError("");
+
+        const startDateInput = document.getElementById("startDate");
+        const endDateInput = document.getElementById("endDate");
+
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+
+        const dividedDateRanges = divideDateRange(startDate, endDate);
+
+        if (dividedDateRanges) {
+          resultDiv.innerHTML = `
+                    <p>자료조사 완료 시점: ${dividedDateRanges.firstRange.toLocaleString()}</p>
+                    <p>PPT 완료 시점: ${dividedDateRanges.secondRange.toLocaleString()}</p>
+                    <p>발표준비 완료 시점: ${dividedDateRanges.thirdRange.toLocaleString()}</p>
+                `;
+        }
+      });
+    </script>
+  </body>
+</html>
